@@ -896,6 +896,7 @@ struct ParserConfig {
 struct RenderConfig {
   bool throw_at_missing_includes {true};
   bool html_autoescape {false};
+  bool ignore_missing_vars {false};
 };
 
 } // namespace inja
@@ -2210,6 +2211,9 @@ class Renderer : public NodeVisitor {
       if (not_found_stack.empty()) {
         throw_renderer_error("expression could not be evaluated", expression_list);
       }
+      if (config.ignore_missing_vars){
+        return std::make_shared<json>("");
+      }
 
       const auto node = not_found_stack.top();
       not_found_stack.pop();
@@ -2251,6 +2255,12 @@ class Renderer : public NodeVisitor {
       if (!result[N - i - 1]) {
         const auto data_node = not_found_stack.top();
         not_found_stack.pop();
+
+        if (config.ignore_missing_vars){
+          nlohmann::json empty_value = "";
+          result[N - i - 1] = &empty_value;
+          continue;
+        }
 
         if (throw_not_found) {
           throw_renderer_error("variable '" + static_cast<std::string>(data_node->name) + "' not found", *data_node);
@@ -2846,6 +2856,11 @@ public:
   /// Sets whether we'll automatically perform HTML escape
   void set_html_autoescape(bool will_escape) {
     render_config.html_autoescape = will_escape;
+  }
+
+  /// Sets whether a undefined var will throw an error or return an empty string
+  void set_ignore_missing_vars(bool will_ignore) {
+    render_config.ignore_missing_vars = will_ignore;
   }
 
   Template parse(std::string_view input) {

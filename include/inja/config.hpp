@@ -75,6 +75,7 @@ struct ParserConfig {
 struct RenderConfig {
   bool throw_at_missing_includes {true};
   bool html_autoescape {false};
+  bool ignore_missing_vars {false};
 };
 
 } // namespace inja

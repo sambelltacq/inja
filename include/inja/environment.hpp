@@ -97,6 +97,11 @@ public:
     render_config.html_autoescape = will_escape;
   }
 
+  /// Sets whether a undefined var will throw an error or return an empty string
+  void set_ignore_missing_vars(bool will_ignore) {
+    render_config.ignore_missing_vars = will_ignore;
+  }
+
   Template parse(std::string_view input) {
     Parser parser(parser_config, lexer_config, template_storage, function_storage);
     return parser.parse(input, input_path);

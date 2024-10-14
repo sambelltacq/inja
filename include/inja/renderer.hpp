@@ -116,6 +116,9 @@ class Renderer : public NodeVisitor {
       if (not_found_stack.empty()) {
         throw_renderer_error("expression could not be evaluated", expression_list);
       }
+      if (config.ignore_missing_vars){
+        return std::make_shared<json>("");
+      }
 
       const auto node = not_found_stack.top();
       not_found_stack.pop();
@@ -157,6 +160,12 @@ class Renderer : public NodeVisitor {
       if (!result[N - i - 1]) {
         const auto data_node = not_found_stack.top();
         not_found_stack.pop();
+
+        if (config.ignore_missing_vars){
+          nlohmann::json empty_value = "";
+          result[N - i - 1] = &empty_value;
+          continue;
+        }
 
         if (throw_not_found) {
           throw_renderer_error("variable '" + static_cast<std::string>(data_node->name) + "' not found", *data_node);
